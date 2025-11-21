@@ -132,13 +132,6 @@ end
 %% Load Balancer in front of DB Pool
 OpenVoxDB[OpenVoxDB]
 
-subgraph Postgres[Patroni PostgreSQL Cluster]
-    PGLeader[Postgres Leader]
-    PGReplica1[Postgres Replica 1]
-    PGReplica2[Postgres Replica n]
-end
-
-
 %% Connections
 OVAgent --> LB1
 LB1 --> Compiler1
