@@ -7,13 +7,13 @@
 # @example
 #   include openvox_platform::postgresql
 class openvox_platform::postgresql (
-  $version             = $openvox_platform::postgresql_version,
-  $postgresql_backup   = $openvox_platform::postgresql_backup,
-  $manage_package_repo = $openvox_platform::postgresql_manage_package_repo,
-  $password_encryption = $openvox_platform::postgresql_password_encryption,
+  String[1] $version,
+  Boolean   $backup,
+  Boolean   $manage_package_repo,
+  String[1] $password_encryption,
 ) {
   assert_private()
-  include openvox_platform::files
+  require openvox_platform::files
 
   class { 'postgresql::globals':
     version             => $version,
@@ -28,7 +28,7 @@ class openvox_platform::postgresql (
     listen_addresses    => '127.0.0.1',
   }
 
-  if $postgresql_backup {
+  if $backup {
     file { '/etc/openvox_platform/pg_backup':
       ensure => 'directory',
     }
@@ -36,7 +36,6 @@ class openvox_platform::postgresql (
       destination         => '/etc/openvox_platform/pg_backup',
       backuphistory       => 21,
       manage_dependencies => true,
-      require             => File['/etc/openvox_platform/pg_backup'],
     }
     contain dbbackup
   }

@@ -12,6 +12,7 @@
     { "name": "puppet/selinux",                  "version_requirement": ">= 9.3.0 < 12.0.0"  },
     { "name": "puppet/yum",                      "version_requirement": ">= 5.0.0 < 10.0.0"  },
     { "name": "puppetlabs/apt",                  "version_requirement": ">= 9.0.0 < 10.0.0"  },
+    { "name": "puppetlabs/haproxy",              "version_requirement": ">= 5.0.0 < 9.0.0"   },
     { "name": "puppetlabs/postgresql",           "version_requirement": ">= 10.1.0 < 11.0.0" },
     { "name": "puppetlabs/puppetdb",             "version_requirement": ">= 8.0.0 < 10.0.0"  },
     { "name": "puppetlabs/stdlib",               "version_requirement": ">= 9.0.0 < 10.0.0"  },
@@ -79,6 +80,10 @@
     }
   ],
   "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 999.999.999"
+    },
     {
       "name": "openvox",
       "version_requirement": ">= 7.36 < 9.0.0"

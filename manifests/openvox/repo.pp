@@ -7,8 +7,8 @@
 # @example
 #   include openvox_platform::openvox::repo
 class openvox_platform::openvox::repo (
-  String $baseurl,
-  String $gpgkey,
+  Stdlib::HTTPUrl $baseurl,
+  String[1]       $gpgkey,
 ) {
   case $facts['os']['family'] {
     'Debian': {

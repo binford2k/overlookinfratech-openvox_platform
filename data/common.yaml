@@ -1,17 +1,31 @@
 ---
-openvox_platform::foreman: true
-openvox_platform::puppetdb: true
-openvox_platform::storeconfigs: true
-openvox_platform::reports: null
-openvox_platform::server_jvm_min_heap_size: '1G'
-openvox_platform::server_jvm_max_heap_size: '1G'
-openvox_platform::server_multithreaded: true
-openvox_platform::postgresql_version: '15'
-openvox_platform::postgresql_backup: true
-openvox_platform::postgresql_manage_package_repo: true
-openvox_platform::postgresql_password_encryption: 'scram-sha-256'
-openvox_platform::foreman_version: '3.15'
-openvox_platform::foreman_initial_admin_username: 'admin'
-openvox_platform::foreman_initial_admin_first_name: 'Vox'
-openvox_platform::foreman_initial_admin_last_name: 'Pupuli'
-openvox_platform::foreman_initial_admin_email: null
+# openvox_platform::openvox::foreman: true
+# openvox_platform::openvox::puppetdb: true
+openvox_platform::openvox::reports: null
+
+openvox_platform::postgresql::version: '15'
+openvox_platform::postgresql::backup: true
+openvox_platform::postgresql::manage_package_repo: true
+openvox_platform::postgresql::password_encryption: 'scram-sha-256'
+openvox_platform::foreman::foreman_version: '3.15'
+openvox_platform::foreman::foreman_initial_admin_username: 'admin'
+openvox_platform::foreman::foreman_initial_admin_first_name: 'Vox'
+openvox_platform::foreman::foreman_initial_admin_last_name: 'Pupuli'
+openvox_platform::foreman::foreman_initial_admin_email: null
+openvox_platform::foreman::puppetdb: true
+
+openvox_platform::openvox::jvm_min_heap_size: '1G'
+openvox_platform::openvox::jvm_max_heap_size: '1G'
+openvox_platform::openvox::multithreaded: true
+
+openvox_platform::profile::primary::foreman: true
+openvox_platform::profile::primary::puppetdb: true
+openvox_platform::profile::primary::jvm_min_heap_size: '1G'
+openvox_platform::profile::primary::jvm_max_heap_size: '1G'
+openvox_platform::profile::primary::multithreaded: true
+
+openvox_platform::profile::compiler::foreman: false
+openvox_platform::profile::compiler::puppetdb: false
+openvox_platform::profile::compiler::jvm_min_heap_size: '1G'
+openvox_platform::profile::compiler::jvm_max_heap_size: '1G'
+openvox_platform::profile::compiler::multithreaded: true

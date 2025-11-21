@@ -1,16 +1,34 @@
 # @summary The main OpenVox platform class
 #
-# The default parameters of this class will manage a primary OpenVox server with
-# Foreman and OpenVoxDB. You may also choose to disable `foreman` to get a non-GUI
-# server or both `foreman` and `puppetdb` to get a secondary compiler node.
+# This class sets default parameters for an entire OpenVox infrastructure.
+# In most cases, the defaults are acceptable and you can ignore this class.
+# If you choose to customize, then declare this class with any desired parameters
+# before any other `openvox_platform` class on all nodes of your infrastructure.
+#
+# @examples
+# ```
+#   # Declare this on all nodes. Omit this declaration if the default meet needs.
+#   class { 'openvox_platform':
+#     postgresql_version   => '13',
+#     server_multithreaded => false,
+#     reports              => 'logs',
+#   }
+#
+#   node 'server.example.com' {
+#     include openvox_platform::profile::primary
+#   }
+#   node /^compiler(\d+).example.com$/ {
+#     include openvox_platform::profile::compiler
+#   }
+#   node default {
+#     include openvox_platform::profile::agent
+#   }
+# ```
 #
 # @param foreman
 #   Whether or not to configure Foreman on this node.
 # @param puppetdb
 #   Whether or not to configure OpenVoxDB on this node.
-# @param storeconfigs
-#   Whether or not to enable `storeconfigs`, which allows the Foreman to ingest
-#   them and display comprehensive node information.
 # @param reports
 #   A comma-separated list of report processors to enable. The `foreman` and
 #   `puppetdb` processors are added to this list when appropriate.
@@ -45,7 +63,6 @@
 class openvox_platform (
   Boolean             $foreman,
   Boolean             $puppetdb,
-  Boolean             $storeconfigs,
   Optional[String[1]] $reports,
   String              $server_jvm_min_heap_size,
   String              $server_jvm_max_heap_size,
@@ -60,6 +77,7 @@ class openvox_platform (
   String[1]           $foreman_initial_admin_last_name,
   Optional[String[1]] $foreman_initial_admin_email,
 ) {
+  # Generate a string list of all desired report processors
   $server_reports = [
     $reports,
     $puppetdb ? { true => 'puppetdb', false => undef },
@@ -67,13 +85,7 @@ class openvox_platform (
   ].filter |$i| { $i }.join(',')
 
   if versioncmp($postgresql_version, '11') < 0 {
-    fail("PuppetDB requires PostgreSQL version 11 or greater.")
+    fail("OpenVoxDB requires PostgreSQL version 11 or greater.")
   }
-
-  include openvox_platform::files
-  include openvox_platform::network
-  include openvox_platform::postgresql
-  include openvox_platform::openvox
-  include openvox_platform::foreman
 }
 

@@ -5,12 +5,12 @@
 # @example
 #   include openvox_platform::foreman
 class openvox_platform::foreman (
-  String[1] $version                       = $openvox_platform::foreman_version,
-  String[1] $initial_admin_username        = $openvox_platform::foreman_initial_admin_username,
-  String[1] $initial_admin_first_name      = $openvox_platform::foreman_initial_admin_first_name,
-  String[1] $initial_admin_last_name       = $openvox_platform::foreman_initial_admin_last_name,
-  Optional[String[1]] $initial_admin_email = $openvox_platform::foreman_initial_admin_email,
-  Boolean $puppetdb                        = $openvox_platform::puppetdb,
+  String[1]               $version,
+  String[1]               $initial_admin_username,
+  String[1]               $initial_admin_first_name,
+  String[1]               $initial_admin_last_name,
+  Optional[Stdlib::Email] $initial_admin_email,
+  Boolean                 $puppetdb,
 ) {
   assert_private()
   unless $facts['os']['architecture'] in ['x86_64', 'amd64'] {

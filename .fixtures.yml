@@ -3,4 +3,35 @@
 ---
 fixtures:
   forge_modules:
-#     stdlib: "puppetlabs/stdlib"
+      dbbackup: puppet/dbbackup
+      nftables: puppet/nftables
+      r10k: puppet/r10k
+      redis: puppet/redis
+      selinux: puppet/selinux
+      yum: puppet/yum
+      apt: puppetlabs/apt
+      augeas_core: puppetlabs/augeas_core
+      cron_core: puppetlabs/cron_core
+      haproxy: puppetlabs-haproxy
+      postgresql: puppetlabs/postgresql
+      puppetdb: puppetlabs/puppetdb
+      selinux_core: puppetlabs/selinux_core
+      stdlib: puppetlabs/stdlib
+      yumrepo_core: puppetlabs/yumrepo_core
+      foreman: theforeman/foreman
+      foreman_proxy: theforeman/foreman_proxy
+      puppet: theforeman/puppet
+      puppetserver_foreman: theforeman/puppetserver_foreman
+      concat: puppetlabs-concat
+      systemd: puppet-systemd
+      inifile: puppetlabs-inifile
+      firewall: puppetlabs-firewall
+      vcsrepo: puppetlabs-vcsrepo
+      mcollective: choria-mcollective
+      extlib: puppet-extlib
+      apache: puppetlabs-apache
+      dns: theforeman-dns
+      dhcp: theforeman-dhcp
+      tftp: theforeman-tftp
+      datacat: richardc-datacat
+      mosquitto: puppet-mosquitto
