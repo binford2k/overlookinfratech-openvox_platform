@@ -1,85 +1,30 @@
 # Reference architecture for the OpenVox platform.
 
 This is our [WIP] opinionated reference architecture for the OpenVox platform.
-This implements the following node types. Each type also includes the agent service.
-
-1. [OpenVox compiler nodes](#openvox-compilers):
-    - OpenVox server
-    - OpenVoxDB pointing to a central PostgreSQL node
-    - Codebase deployment configured
-    - Central reporting
-    - Performance tuning profiles
-1. [The *primary* OpenVox server](#primary-openvox-server):
-    - Serves as the central certificate authority (CA)
-    - Everything from [OpenVox compiler nodes](#openvox-compilers)
-    - *Optional: Foreman web UI*
-        - Redis Rails cache
-        - Full two-way integration between OpenVox and Foreman
-    - *Optional: [OpenVox View](https://github.com/voxpupuli/openvoxview) dashboard*
-        - lightweight read only alternative to Foreman
-    - *Optional: PostgreSQL server*
-        - A monolithic server includes PostgreSQL, all other tiers externalize it.
-1. [Load balancers](#load-balancers):
-    - HAproxy balancer for either compilers or openvoxdb nodes
-1. [PostgreSQL](#postgresql):
-    - All OpenVoxDB nodes point to this server
-    - If data HA is needed, this can be a Patroni managed cluster
-    - Basic HA is achieved with regular data backups.
-1. [OpenVox agent nodes](#openvox-agents):
-    - Optional serverless configuration
-        - Codebase deployment configured
-        - Central reporting
-1. [OpenVoxDB nodes](#openvoxdb) (for extra-large infrastructures):
-    - OpenVoxDB service pointed at PostgreSQL cluster
-    - Performance tuning profiles
 
 
-## Configuration
+## Supported and recommended architectures
 
-First you should describe your infrastructure in Hiera data. The server names
-do not have to be unique. For example, a monolithic OpenVox server will be the
-primary, the foreman, and the openvoxdb. Leave any unused values blank.
+This module builds the following architecture layouts. Each has several
+optional configurations, such as choosing whether to run Foreman or OpenVoxView
+and whether to run them on their own nodes or on the primary. You can even
+choose to externalize the PostgreSQL database to a Patroni cluster if you
+have data HA requirements.
 
-```yaml
----
-openvox_platform::primary_server: my.primary.example.com
-openvox_platform::foreman_server: my.foreman.example.com # defaults to primary_server if blank
-openvox_platform::openvoxdb: my.openvoxdb.example.com    # defaults to primary_server if blank
-openvox_platform::postgresql: my.pgsql.example.com       # defaults to primary_server if blank
+Configurations with compiler or database pools allow you to tune for different
+load profiles by provisioning or deprovisioning nodes of the proper types.
+They will self-configure and add themselves to the appropriate pools
+(*requires OpenVoxDB*).
 
-# If setting up a compiler pool
-openvox_platform::loadbalancer: my.loadbalancer.example.com
-# If -not- using OpenVoxDB, you must list all compiler nodes below
-openvox_platform::compilers:
-  - my.compiler1.example.com
-  - my.compiler2.example.com
-  - my.compilern.example.com
-
-# If setting up an OpenVoxDB pool
-openvox_platform::db_loadbalancer: my.dbloadbalancer.example.com
-
-# deploying module and hiera repos
-openvox_platform::control_repo: https://github.com/example/controlrepo
-openvox_platform::hiera_repo: https://github.com/example/hierarepo # defaults to control_repo if blank
-openvox_platform::reports:  # if you want reporting other than foreman and/or openvoxdb
-  - additional
-  - report
-  - handlers
-```
-
-Then provision servers to match according to your tier needs. Classify each
-node following the table below and ensure that they all have DNS names
-matching the Hieradata infra description.
-
-## Standard Monolithic Infrastructure
-
-<details>
-  <summary>Details</summary>
+### Standard Monolithic Infrastructure
 
 This tier is a single monolithic OpenVox server, also serving the Foreman Console
 and OpenVoxDB. If you don't want the graphical interface, you can disable Foreman.
 You can also choose to use the read-only OpenVoxView dashboard instead. If data HA
 is required, the PostgreSQL service may be externalized to a Patroni managed cluster.
+
+<details>
+  <summary>Details</summary>
 
 Provision:
 * One monolithic server with no parameters.
@@ -109,23 +54,23 @@ class Foreman,OpenVoxView optional
 </details>
 
 
-## Large Infrastructure
-
-<details>
-  <summary>Details</summary>
+### Large Infrastructure
 
 This tier adds a load balanced compiler pool. A load balancer is placed in front of the
 monolithic server and compiler nodes are added as needed. The primary and each compiler
 runs OpenVoxDB configured to point to a single external PostgreSQL node.
 
-### Optional configurations
+<details>
+  <summary>Details</summary>
+
+#### Optional configurations
 * Foreman may run on the primary, on its own node, or be disabled.
 * For a read-only view of your infra state, you may swap OpenVoxView for Foreman.
 * If data HA is required, the PostgreSQL node may be a Patroni managed cluster.
     * If geographically dispersed distribution is required, Patroni can manage asynchronous replication.
 * If you are node constrained, it's possible to run the PostgreSQL service on the primary server.
 
-### Provision:
+#### Provision:
 * One primary server; monolithic but with external PostgreSQL.
 * One loadbalancer node.
 * One PostgreSQL node.
@@ -175,15 +120,15 @@ class Foreman,OpenVoxView optional
 
 </details>
 
-## Extra Large Infrastructure
-
-<details>
-  <summary>Details</summary>
+### Extra Large Infrastructure
 
 The largest tier also load balances a pool of OpenVoxDB nodes and externalizes the
 PostgreSQL backend to a Patroni managed cluster. This allows you to balance compilers
 and OpenVoxDB nodes separately to respond to different scaling patterns. If geographically
 dispersed data distribution is required, Patroni can manage asynchronous replication.
+
+<details>
+  <summary>Details</summary>
 
 Provision:
 * One loadbalancer node.
@@ -264,16 +209,93 @@ class Foreman,OpenVoxView optional
 
 </details>
 
+
+## Configuration
+
+First you should describe your infrastructure in Hiera data. The server names
+do not have to be unique. For example, a monolithic OpenVox server will be the
+primary, the foreman, and the openvoxdb. Leave any unused values blank.
+
+```yaml
+---
+openvox_platform::primary_server: my.primary.example.com
+openvox_platform::foreman_server: my.foreman.example.com      # defaults to primary_server if blank
+openvox_platform::openvoxdb_server: my.openvoxdb.example.com  # defaults to primary_server if blank
+openvox_platform::postgresql_server: my.pgsql.example.com     # defaults to primary_server if blank
+
+# If setting up a compiler pool
+openvox_platform::loadbalancer: my.loadbalancer.example.com
+# If -not- using OpenVoxDB, you must list all compiler nodes below
+openvox_platform::compilers:
+  - my.compiler1.example.com
+  - my.compiler2.example.com
+  - my.compilern.example.com
+
+# If setting up an OpenVoxDB pool
+openvox_platform::db_loadbalancer: my.dbloadbalancer.example.com
+
+# deploying module and hiera repos
+openvox_platform::control_repo: https://github.com/example/controlrepo
+openvox_platform::hiera_repo: https://github.com/example/hierarepo # defaults to a shared control repo if blank
+openvox_platform::reports:  # if you want reporting other than foreman and/or openvoxdb
+  - additional
+  - report
+  - handlers
+```
+
+Then provision servers to match according to your tier needs. Classify each
+node following the table below and ensure that they all have DNS names
+matching the Hieradata infra description.
+
+
+## Classification
+
 | Server Role                | Classify with                             | notes                 |
 |----------------------------|-------------------------------------------|-----------------------|
 | _All infrastructure nodes_ | `openvox_platform`                        |                       |
-| Monolithic OpenVox Server  | `openvox_platform::profile::monolithic`   |                       |
+| Monolithic OpenVox Server  | `openvox_platform::profile::monolith`     |                       |
 | Primary OpenVox Server     | `openvox_platform::profile::primary`      |                       |
 | Foreman Server             | `openvox_platform::profile::foreman`      | ⚛️ can run on primary |
 | OpenVoxView Server         | `openvox_platform::profile::openvoxview`  | ⚛️ can run on primary |
 | PostgreSQL Server          | `openvox_platform::profile::postgresql`   | ⚛️ can run on primary |
 | Compiler Loadbalancer      | `openvox_platform::profile::lb:compiler`  |                       |
 | OpenVoxDB Loadbalancer     | `openvox_platform::profile::lb:openvoxdb` |                       |
+
+<details>
+  <summary>Node type details</summary>
+
+This module implements the following node types. Each type also includes the agent service.
+
+1. [OpenVox compiler nodes](#openvox-compilers):
+    - OpenVox server
+    - OpenVoxDB pointing to a central PostgreSQL node
+    - Codebase deployment configured
+    - Central reporting
+    - Performance tuning profiles
+1. [The *primary* OpenVox server](#primary-openvox-server):
+    - Serves as the central certificate authority (CA)
+    - Everything from [OpenVox compiler nodes](#openvox-compilers)
+    - *Optional: Foreman web UI*
+        - Redis Rails cache
+        - Full two-way integration between OpenVox and Foreman
+    - *Optional: [OpenVox View](https://github.com/voxpupuli/openvoxview) dashboard*
+        - lightweight read only alternative to Foreman
+    - *Optional: PostgreSQL server*
+        - A monolithic server includes PostgreSQL, all other tiers externalize it.
+1. [Load balancers](#load-balancers):
+    - HAproxy balancer for either compilers or openvoxdb nodes
+1. [PostgreSQL](#postgresql):
+    - All OpenVoxDB nodes point to this server
+    - If data HA is needed, this can be a Patroni managed cluster
+    - Basic HA is achieved with regular data backups.
+1. [OpenVox agent nodes](#openvox-agents):
+    - Optional serverless configuration
+        - Codebase deployment configured
+        - Central reporting
+1. [OpenVoxDB nodes](#openvoxdb) (for extra-large infrastructures):
+    - OpenVoxDB service pointed at PostgreSQL cluster
+    - Performance tuning profiles
+</details>
 
 ### Load balancing
 
